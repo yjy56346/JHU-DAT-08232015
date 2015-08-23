@@ -34,3 +34,18 @@ http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartpho
  e) From the data set in step d), creates a second, independent tidy data set 
     with the average of each variable for each activity and each subject.
     
+```{r}
+source("run_analysis.R")
+```
+    
+    Entire course project can be run by sourcing the R script file 
+    with "features.txt", "activity_labels.txt" in the working directory
+    plus subdirectories "train" and "test" containing the following files:
+        train\  y_train.txt,    X_train.txt, and    subject_train.txt
+        test\   y_test.txt,     X_test.txt, and     subject_test.txt
+        
+    Above code will generate the following two tidy data files:
+        tidyDataSet.txt
+        tidyDataSetMeansGroupBySubActivities.txt
+        
+    

@@ -132,6 +132,8 @@ print(length(datDF2))
 #   d-1) Let's combine the "subNum", "activities", and "datDF2"
 cData <- subNum %>% cbind(activities) %>% cbind(datDF2)
 
+write.table(cData, "tidyDataSet.txt", row.names=FALSE)
+
 # e) From the data set in step d), creates a second, independent tidy data set 
 #   with the average of each variable for each activity and each subject.
 
@@ -141,3 +143,5 @@ cData <- subNum %>% cbind(activities) %>% cbind(datDF2)
 #              functions to all "-mean()" and "-std()" columns!
 cDatSubAct <- group_by(select(cData, -ACTIVITY), SUBJECT_NUM, ACTIVITY_NUM) %>% 
     summarise_each(funs(mean))
+
+write.table(cDatSubAct, "tidyDataSetMeansGroupBySubActivities.txt", row.names=FALSE)

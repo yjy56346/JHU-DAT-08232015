@@ -21,7 +21,6 @@ output: html_document
     
 
 ```{r}
-setwd("~/JHU EMBA/R/#3 - DAT/UCI HAR Dataset")
 library(dplyr)
 ```
 
@@ -44,7 +43,7 @@ actNum <-
 activities <- mutate(actNum, ACTIVITY=activityLabels[actNum[,1],2])
 ```
 
-   [a-2] subject_train/test.txt: each row indicated the subject {1 ... 30} measured
+   [a-2] subject_train & test.txt: each row indicates the subject {1 ... 30} measured
    
 ```{r}
 subNum <- 
@@ -54,14 +53,14 @@ subNum <-
                      stringsAsFactors = FALSE))
 ```
 
-   [a-3] X_train/test.txt: explained in "features.txt" & "features_info.txt"
+   [a-3] X_train & test.txt: explained in "features.txt" & "features_info.txt"
    
 ```{r}
 featureLabels <- read.table("features.txt", stringsAsFactors = FALSE)
 ```
 
     use the 2nd column of the featureLabels to name columns, so that we can use
-    dplyr's substring select method to filter out "mean()" and "std()" columns
+    dplyr's substring select method to filter out "-mean()" and "-std()" columns
   
 ```{r}
 datDF <- 
@@ -71,23 +70,24 @@ datDF <-
                      stringsAsFactors = FALSE))
 ```
 
- [b] extract out the rows that have "mean()" or "std()" in it's name using dplyr!
+ [b] extract out the rows that have "-mean()" or "-std()" in it's name using dplyr!
+ I was able to observe the following rows to include -mean() or -std() data.
  
     colNums <- c(1, 2, 3, 4, 5, 6, 41, 42, 43, 44, 45, 46, 81, 82, 83, 84, 85, 86,
              ..., 503, 504, 516, 517, 529, 530, 542, 543) = length of 66!
+    
+    1 = tBodyAcc-mean()-X, 2 = tBodyAcc-mean()-Y, 3 = tBodyAcc-mean()-Z,
+    ..., 542 = fBodyBodyGyroJerkMag-mean(), 543 = fBodyBodyGyroJerkMag-std()
+    
+    Row 119 - 53 = 66 rows => column selection of "-mean()" or "-std()" entries
+
+ [b-1] extract only MEAN/STD columns as listed in features.txt using dplyr select!
 
 ```{r}
 datDF2 <- select(datDF, contains(".mean.."), contains(".std.."))
 print(length(datDF2))
 ```
 
- [b-1] extract only MEAN/STD columns as listed in features.txt using dplyr select!
- 
-    1 tBodyAcc-mean()-X, 2 tBodyAcc-mean()-Y, 3 tBodyAcc-mean()-Z,
-    ..., 542 fBodyBodyGyroJerkMag-mean(), 543 fBodyBodyGyroJerkMag-std()
-    
-    Row 119 - 53 = 66 rows => column selection of "-mean()" or "-std()" entries
-    
  [c] Uses descriptive activity names to name the activities in the data set.
    -> done above...
    
@@ -98,6 +98,8 @@ print(length(datDF2))
    
 ```{r}
 cData <- subNum %>% cbind(activities) %>% cbind(datDF2)
+
+write.table(cData, "tidyDataSet.txt", row.names=FALSE)
 ```
 
  [e] From the data set in step [d], creates a second, independent tidy data set 
@@ -112,6 +114,8 @@ cData <- subNum %>% cbind(activities) %>% cbind(datDF2)
 ```{r}
 cDatSubAct <- group_by(select(cData, -ACTIVITY), SUBJECT_NUM, ACTIVITY_NUM) %>% 
     summarise_each(funs(mean))
+    
+write.table(cDatSubAct, "tidyDataSetMeansGroupBySubActivities.txt", row.names=FALSE)
 ```
 
 

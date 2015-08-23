@@ -76,8 +76,7 @@ img {
 <li><p>Appropriately labels the data set with descriptive variable names.</p></li>
 <li><p>From the data set in step d), creates a second, independent tidy data set with the average of each variable for each activity and each subject.</p></li>
 </ol>
-<pre class="{r}"><code>setwd(&quot;~/JHU EMBA/R/#3 - DAT/UCI HAR Dataset&quot;)
-library(dplyr)</code></pre>
+<pre class="{r}"><code>library(dplyr)</code></pre>
 <p>[a] read TRAIN &amp; TEST data, bind them, and mutate them by adding activity label</p>
 <p>[a-1] y_train/test.txt: explained in “activity_labels.txt”</p>
 <pre><code>1 = WALKING, 2 = WALKING_UPSTAIRS, 3 = WALKING_DOWNSTAIRS,
@@ -91,41 +90,46 @@ actNum &lt;-
                      stringsAsFactors = FALSE))
 
 activities &lt;- mutate(actNum, ACTIVITY=activityLabels[actNum[,1],2])</code></pre>
-<p>[a-2] subject_train/test.txt: each row indicated the subject {1 … 30} measured</p>
+<p>[a-2] subject_train &amp; test.txt: each row indicates the subject {1 … 30} measured</p>
 <pre class="{r}"><code>subNum &lt;- 
     read.table(&quot;train/subject_train.txt&quot;, col.names=c(&quot;SUBJECT_NUM&quot;), 
                      stringsAsFactors = FALSE) %&gt;%
     rbind(read.table(&quot;test/subject_test.txt&quot;, col.names=c(&quot;SUBJECT_NUM&quot;), 
                      stringsAsFactors = FALSE))</code></pre>
-<p>[a-3] X_train/test.txt: explained in “features.txt” &amp; “features_info.txt”</p>
+<p>[a-3] X_train &amp; test.txt: explained in “features.txt” &amp; “features_info.txt”</p>
 <pre class="{r}"><code>featureLabels &lt;- read.table(&quot;features.txt&quot;, stringsAsFactors = FALSE)</code></pre>
 <pre><code>use the 2nd column of the featureLabels to name columns, so that we can use
-dplyr's substring select method to filter out &quot;mean()&quot; and &quot;std()&quot; columns</code></pre>
+dplyr's substring select method to filter out &quot;-mean()&quot; and &quot;-std()&quot; columns</code></pre>
 <pre class="{r}"><code>datDF &lt;- 
     read.table(&quot;train/X_train.txt&quot;, col.names= featureLabels[,2], 
                stringsAsFactors = FALSE) %&gt;%
     rbind(read.table(&quot;test/X_test.txt&quot;, col.names= featureLabels[,2], 
                      stringsAsFactors = FALSE))</code></pre>
-<p>[b] extract out the rows that have “mean()” or “std()” in it’s name using dplyr!</p>
+<p>[b] extract out the rows that have “-mean()” or “-std()” in it’s name using dplyr! I was able to observe the following rows to include -mean() or -std() data.</p>
 <pre><code>colNums &lt;- c(1, 2, 3, 4, 5, 6, 41, 42, 43, 44, 45, 46, 81, 82, 83, 84, 85, 86,
-         ..., 503, 504, 516, 517, 529, 530, 542, 543) = length of 66!</code></pre>
-<pre class="{r}"><code>datDF2 &lt;- select(datDF, contains(&quot;.mean..&quot;), contains(&quot;.std..&quot;))
-print(length(datDF2))</code></pre>
-<p>[b-1] extract only MEAN/STD columns as listed in features.txt using dplyr select!</p>
-<pre><code>1 tBodyAcc-mean()-X, 2 tBodyAcc-mean()-Y, 3 tBodyAcc-mean()-Z,
-..., 542 fBodyBodyGyroJerkMag-mean(), 543 fBodyBodyGyroJerkMag-std()
+         ..., 503, 504, 516, 517, 529, 530, 542, 543) = length of 66!
+
+1 = tBodyAcc-mean()-X, 2 = tBodyAcc-mean()-Y, 3 = tBodyAcc-mean()-Z,
+..., 542 = fBodyBodyGyroJerkMag-mean(), 543 = fBodyBodyGyroJerkMag-std()
 
 Row 119 - 53 = 66 rows =&gt; column selection of &quot;-mean()&quot; or &quot;-std()&quot; entries</code></pre>
+<p>[b-1] extract only MEAN/STD columns as listed in features.txt using dplyr select!</p>
+<pre class="{r}"><code>datDF2 &lt;- select(datDF, contains(&quot;.mean..&quot;), contains(&quot;.std..&quot;))
+print(length(datDF2))</code></pre>
 <p>[c] Uses descriptive activity names to name the activities in the data set. -&gt; done above…</p>
 <p>[d] Appropriately labels the data set with descriptive variable names. -&gt; done above…</p>
 <p>[d-1] Let’s combine the “subNum”, “activities”, and “datDF2”</p>
-<pre class="{r}"><code>cData &lt;- subNum %&gt;% cbind(activities) %&gt;% cbind(datDF2)</code></pre>
+<pre class="{r}"><code>cData &lt;- subNum %&gt;% cbind(activities) %&gt;% cbind(datDF2)
+
+write.table(cData, &quot;tidyDataSet.txt&quot;, row.names=FALSE)</code></pre>
 <p>[e] From the data set in step [d], creates a second, independent tidy data set with the average of each variable for each activity and each subject.</p>
 <p>[e-1] Using “cData” group_by their “SUBJECT_NUM” and “ACTIVITY_NUM” and summarize_each columns using mean function per SUBJECT/ACTIVITY! ;-)</p>
 <pre><code>NOTE: unfortunately, I have to remove ACTIVITY column to apply &quot;mean&quot;
 functions to all &quot;-mean()&quot; and &quot;-std()&quot; columns!</code></pre>
 <pre class="{r}"><code>cDatSubAct &lt;- group_by(select(cData, -ACTIVITY), SUBJECT_NUM, ACTIVITY_NUM) %&gt;% 
-    summarise_each(funs(mean))</code></pre>
+    summarise_each(funs(mean))
+    
+write.table(cDatSubAct, &quot;tidyDataSetMeansGroupBySubActivities.txt&quot;, row.names=FALSE)</code></pre>
 
 
 </div>
